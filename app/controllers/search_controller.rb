@@ -6,13 +6,8 @@ class SearchController < ApplicationController
     end
     parsed_response = JSON.parse(response.body, symbolize_names: true)
     @station = Station.new(parsed_response)
-
-    response2 = conn2.get do |req|
-      req.params['origin'] = params[:location]
-      req.params['destination'] = @station.street_address
-    end 
-    parsed_response2 = JSON.parse(response.body, symbolize_names: true)
-    binding.pry
+    directions = DirectionsService.new
+    @directions = Direction.new(directions.get_directions_by_address(params[:location], @station.address))
   end
 
   private
@@ -24,8 +19,4 @@ class SearchController < ApplicationController
     end
   end
 
-  def conn2
-    Faraday.new('https://maps.googleapis.com/maps/api/directions/json?') do |f|
-      f.params['key'] = ENV["GOOGLE_KEY"]
-    end
 end
